@@ -1,1 +1,39 @@
-1)Normal Human Thing
+# Functional
+
+1. User sign-up, sign-in, reset-password, edit profile.
+
+2. Start group chats (limit 100 users)
+3. Send-receive messages
+4. Send/receive media
+5. Access messages after they've been offline
+
+6. Audio/Video calling.
+
+# Non-Functional
+
+1. Delivered with low-latency, < 500ms
+2. Guarantee delivery of messages
+3. Billions of users, high throughput
+4. Messages not stored unnecessarily
+5. Fault-tolerant
+
+# Core entity
+
+1. Users
+2. Chats (2-100 users)
+3. Messages
+4. Clients (a user might have multiple devices)
+
+# Commands
+
+## Sent
+
+- createChat
+- sendMessage
+- createAttachment
+- modifyParticipants
+
+## Received
+
+- newMessage
+- chatUpdate
