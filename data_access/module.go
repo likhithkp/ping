@@ -1,5 +1,12 @@
 package data_access
 
-import "go.uber.org/fx"
+import (
+	"github.com/likhithkp/ping/data_access/mongo"
+	"github.com/likhithkp/ping/data_access/repository"
+	"go.uber.org/fx"
+)
 
-var Module = fx.Module("")
+var Module = fx.Module("data_access",
+	mongo.Module,
+	repository.Module,
+)
