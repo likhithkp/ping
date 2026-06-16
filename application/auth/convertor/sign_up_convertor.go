@@ -3,7 +3,7 @@ package convertor
 import (
 	"time"
 
-	"github.com/likhithkp/ping/application/user/dto"
+	"github.com/likhithkp/ping/application/auth/dto"
 	"github.com/likhithkp/ping/domain"
 )
 

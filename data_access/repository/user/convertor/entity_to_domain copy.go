@@ -12,6 +12,7 @@ func ConvertEntityToDomain(entity *userEntity.UserEntity) *domain.UserDomain {
 		LastName:    entity.LastName,
 		UserName:    entity.UserName,
 		Bio:         entity.Bio,
+		Image:       entity.Image,
 		DateOfBirth: entity.DateOfBirth,
 		Password:    entity.Password,
 		Email:       entity.Email,

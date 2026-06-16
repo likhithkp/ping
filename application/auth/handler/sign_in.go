@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/likhithkp/ping/application/user/dto"
+	"github.com/likhithkp/ping/application/auth/dto"
 	"github.com/likhithkp/ping/data_access/repository/user"
 	"github.com/likhithkp/ping/domain"
 	_const "github.com/likhithkp/ping/utils/const"

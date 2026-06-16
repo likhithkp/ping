@@ -1,8 +1,8 @@
-package user
+package auth
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/likhithkp/ping/application/user/handler"
+	"github.com/likhithkp/ping/application/auth/handler"
 )
 
 type UserController struct {

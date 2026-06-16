@@ -1,7 +1,7 @@
-package user
+package auth
 
 import (
-	"github.com/likhithkp/ping/application/user/handler"
+	"github.com/likhithkp/ping/application/auth/handler"
 	"go.uber.org/fx"
 )
 

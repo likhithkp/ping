@@ -5,6 +5,7 @@ type SignUpRequest struct {
 	LastName    string `json:"lastName"`
 	UserName    string `json:"userName"`
 	Bio         string `json:"bio"`
+	Image       string `json:"image"`
 	DateOfBirth string `json:"dateOfBirth"`
 	Password    string `json:"password"`
 	Email       string `json:"email"`

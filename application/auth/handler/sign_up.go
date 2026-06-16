@@ -1,13 +1,19 @@
 package handler
 
 import (
+	"bytes"
+	"encoding/base64"
+	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/likhithkp/ping/application/user/convertor"
-	"github.com/likhithkp/ping/application/user/dto"
+	"github.com/google/uuid"
+	"github.com/likhithkp/ping/application/auth/convertor"
+	"github.com/likhithkp/ping/application/auth/dto"
 	"github.com/likhithkp/ping/data_access/repository/user"
 	"github.com/likhithkp/ping/utils/other"
+	"github.com/likhithkp/ping/utils/storage"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -15,17 +21,20 @@ import (
 type SignUpHandler struct {
 	utils          *other.Utils
 	logger         *zap.Logger
+	storage        *storage.Uploader
 	userRepository *user.UserRepository
 }
 
 func NewSignUpHandler(
 	utils *other.Utils,
 	logger *zap.Logger,
+	storage *storage.Uploader,
 	userRepository *user.UserRepository,
 ) *SignUpHandler {
 	return &SignUpHandler{
 		utils:          utils,
 		logger:         logger,
+		storage:        storage,
 		userRepository: userRepository,
 	}
 }
@@ -54,6 +63,35 @@ func (signUpHandler *SignUpHandler) SignUp(c *fiber.Ctx) error {
 	if err != nil {
 		signUpHandler.logger.Error("failed to convert dto to user domain", zap.Error(err))
 		return signUpHandler.utils.Response(c, false, http.StatusInternalServerError, "Internal server error", nil)
+	}
+
+	if newUser.Image != "" {
+		imageBytes, err := base64.StdEncoding.DecodeString(newUser.Image)
+		if err != nil {
+			signUpHandler.logger.Error("invalid base64 image format", zap.Error(err))
+			return signUpHandler.utils.Response(c, false, http.StatusBadRequest, "Invalid image format. Please upload a valid photo.", nil)
+		}
+
+		cleanName := strings.Map(func(r rune) rune {
+			if (r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9') || r == '_' {
+				return r
+			}
+			return -1
+		}, userDomain.UserName)
+		if cleanName == "" {
+			cleanName = uuid.NewString()
+		}
+
+		key := fmt.Sprintf("users/image/%s.jpg", cleanName)
+
+		reader := bytes.NewReader(imageBytes)
+		url, err := signUpHandler.storage.UploadFile(c.Context(), reader, key, "image/jpeg")
+		if err != nil {
+			signUpHandler.logger.Error("failed to upload image to S3", zap.Error(err))
+			return signUpHandler.utils.Response(c, false, http.StatusInternalServerError, "Failed to upload image", nil)
+		}
+
+		userDomain.Image = url
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newUser.Password), bcrypt.DefaultCost)

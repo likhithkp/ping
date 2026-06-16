@@ -13,6 +13,7 @@ type UserEntity struct {
 	UserName    string             `bson:"userName"`
 	Bio         string             `bson:"bio"`
 	DateOfBirth time.Time          `bson:"dateOfBirth"`
+	Image       string             `bson:"image"`
 	Password    string             `bson:"password"`
 	Email       string             `bson:"email"`
 	PhoneNumber string             `bson:"phoneNumber"`

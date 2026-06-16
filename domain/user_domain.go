@@ -10,6 +10,7 @@ type UserDomain struct {
 	LastName    string
 	UserName    string
 	Bio         string
+	Image       string
 	DateOfBirth time.Time
 	Password    string
 	Email       string

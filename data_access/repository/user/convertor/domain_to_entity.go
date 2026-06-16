@@ -23,6 +23,7 @@ func ConvertDomainToEntity(domain domain.UserDomain) (*userEntity.UserEntity, er
 		LastName:    domain.LastName,
 		UserName:    domain.UserName,
 		Bio:         domain.Bio,
+		Image:       domain.Image,
 		DateOfBirth: domain.DateOfBirth,
 		Password:    domain.Password,
 		Email:       domain.Email,
