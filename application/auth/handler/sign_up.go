@@ -39,13 +39,13 @@ func NewSignUpHandler(
 	}
 }
 
-func (signUpHandler *SignUpHandler) SignUp(c *fiber.Ctx) error {
+func (handler *SignUpHandler) SignUp(c *fiber.Ctx) error {
 	newUser := new(dto.SignUpRequest)
 
 	err := c.BodyParser(newUser)
 	if err != nil {
-		signUpHandler.logger.Error("failed to parse body", zap.Error(err))
-		return signUpHandler.utils.Response(c, false, http.StatusUnprocessableEntity, "Error while parsing signup body", nil)
+		handler.logger.Error("failed to parse body", zap.Error(err))
+		return handler.utils.Response(c, false, http.StatusUnprocessableEntity, "Error while parsing signup body", nil)
 	}
 
 	if newUser.FirstName == "" ||
@@ -56,20 +56,20 @@ func (signUpHandler *SignUpHandler) SignUp(c *fiber.Ctx) error {
 		newUser.Password == "" ||
 		newUser.PhoneNumber == "" ||
 		newUser.Email == "" {
-		return signUpHandler.utils.Response(c, false, http.StatusBadRequest, "Missing fields", nil)
+		return handler.utils.Response(c, false, http.StatusBadRequest, "Missing fields", nil)
 	}
 
 	userDomain, err := convertor.ConvertSignUpDtoToDomain(newUser)
 	if err != nil {
-		signUpHandler.logger.Error("failed to convert dto to user domain", zap.Error(err))
-		return signUpHandler.utils.Response(c, false, http.StatusInternalServerError, "Internal server error", nil)
+		handler.logger.Error("failed to convert dto to user domain", zap.Error(err))
+		return handler.utils.Response(c, false, http.StatusInternalServerError, "Internal server error", nil)
 	}
 
 	if newUser.Image != "" {
 		imageBytes, err := base64.StdEncoding.DecodeString(newUser.Image)
 		if err != nil {
-			signUpHandler.logger.Error("invalid base64 image format", zap.Error(err))
-			return signUpHandler.utils.Response(c, false, http.StatusBadRequest, "Invalid image format. Please upload a valid photo.", nil)
+			handler.logger.Error("invalid base64 image format", zap.Error(err))
+			return handler.utils.Response(c, false, http.StatusBadRequest, "Invalid image format. Please upload a valid photo.", nil)
 		}
 
 		cleanName := strings.Map(func(r rune) rune {
@@ -85,10 +85,10 @@ func (signUpHandler *SignUpHandler) SignUp(c *fiber.Ctx) error {
 		key := fmt.Sprintf("users/image/%s.jpg", cleanName)
 
 		reader := bytes.NewReader(imageBytes)
-		url, err := signUpHandler.storage.UploadFile(c.Context(), reader, key, "image/jpeg")
+		url, err := handler.storage.UploadFile(c.Context(), reader, key, "image/jpeg")
 		if err != nil {
-			signUpHandler.logger.Error("failed to upload image to S3", zap.Error(err))
-			return signUpHandler.utils.Response(c, false, http.StatusInternalServerError, "Failed to upload image", nil)
+			handler.logger.Error("failed to upload image to S3", zap.Error(err))
+			return handler.utils.Response(c, false, http.StatusInternalServerError, "Failed to upload image", nil)
 		}
 
 		userDomain.Image = url
@@ -96,16 +96,16 @@ func (signUpHandler *SignUpHandler) SignUp(c *fiber.Ctx) error {
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newUser.Password), bcrypt.DefaultCost)
 	if err != nil {
-		signUpHandler.logger.Error("failed to hash password", zap.Error(err))
-		return signUpHandler.utils.Response(c, false, http.StatusInternalServerError, "Internal server error", nil)
+		handler.logger.Error("failed to hash password", zap.Error(err))
+		return handler.utils.Response(c, false, http.StatusInternalServerError, "Internal server error", nil)
 	}
 
 	userDomain.Password = string(hashedPassword)
-	err = signUpHandler.userRepository.UpsertUser(c.Context(), userDomain)
+	err = handler.userRepository.UpsertUser(c.Context(), userDomain)
 	if err != nil {
-		signUpHandler.logger.Error("failed to upsert user", zap.Error(err))
-		return signUpHandler.utils.Response(c, false, http.StatusInternalServerError, "Internal server error", nil)
+		handler.logger.Error("failed to upsert user", zap.Error(err))
+		return handler.utils.Response(c, false, http.StatusInternalServerError, "Internal server error", nil)
 	}
 
-	return signUpHandler.utils.Response(c, true, http.StatusCreated, "Sign up successful", nil)
+	return handler.utils.Response(c, true, http.StatusCreated, "Sign up successful", nil)
 }

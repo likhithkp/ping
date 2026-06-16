@@ -4,48 +4,56 @@ import (
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/likhithkp/ping/application/auth/convertor"
 	"github.com/likhithkp/ping/application/auth/dto"
+	"github.com/likhithkp/ping/data_access/repository/otp"
 	"github.com/likhithkp/ping/data_access/repository/user"
 	"github.com/likhithkp/ping/domain"
 	_const "github.com/likhithkp/ping/utils/const"
+	"github.com/likhithkp/ping/utils/helper"
 	"github.com/likhithkp/ping/utils/jwt"
+	"github.com/likhithkp/ping/utils/mail"
 	"github.com/likhithkp/ping/utils/other"
 	"go.uber.org/zap"
-	"golang.org/x/crypto/bcrypt"
 )
 
-type SignInHandler struct {
+type ForgotPasswordHandler struct {
 	utils          *other.Utils
 	logger         *zap.Logger
-	userRepository *user.UserRepository
 	jwtManager     *jwt.GenerateJwtTokenManager
+	mailer         *mail.Mailer
+	userRepository *user.UserRepository
+	otpRepository  *otp.OtpRepository
 }
 
-func NewSignInHandler(
+func NewForgotPasswordHandler(
 	utils *other.Utils,
 	logger *zap.Logger,
-	userRepository *user.UserRepository,
 	jwtManager *jwt.GenerateJwtTokenManager,
-) *SignInHandler {
-	return &SignInHandler{
+	mailer *mail.Mailer,
+	userRepository *user.UserRepository,
+	otpRepository *otp.OtpRepository,
+) *ForgotPasswordHandler {
+	return &ForgotPasswordHandler{
 		utils:          utils,
 		logger:         logger,
-		userRepository: userRepository,
 		jwtManager:     jwtManager,
+		mailer:         mailer,
+		userRepository: userRepository,
+		otpRepository:  otpRepository,
 	}
 }
 
-func (handler *SignInHandler) SignIn(c *fiber.Ctx) error {
-	user := new(dto.SignInRequest)
+func (handler *ForgotPasswordHandler) ForgotPassword(c *fiber.Ctx) error {
+	user := new(dto.ForgotPasswordRequest)
 
 	err := c.BodyParser(user)
 	if err != nil {
 		handler.logger.Error("failed to parse body", zap.Error(err))
-		return handler.utils.Response(c, false, http.StatusUnprocessableEntity, "Error while parsing signin body", nil)
+		return handler.utils.Response(c, false, http.StatusUnprocessableEntity, "Error while parsing forgot password body", nil)
 	}
 
-	if user.Password == "" ||
-		user.IdentifierType == "" {
+	if user.IdentifierType == "" {
 		return handler.utils.Response(c, false, http.StatusBadRequest, "Missing fields", nil)
 	}
 	if user.IdentifierType == _const.EMAIL && user.Email == "" {
@@ -78,19 +86,19 @@ func (handler *SignInHandler) SignIn(c *fiber.Ctx) error {
 		}
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(userDomain.Password), []byte(user.Password))
+	otp := helper.GenerateOTP()
+	optDomain := convertor.ConvertOtpReqToDomain(userDomain.Email, userDomain.Id, otp)
+	err = handler.otpRepository.UpsertOtp(c.Context(), optDomain)
 	if err != nil {
-		handler.logger.Error("failed to compare hash and password", zap.Error(err))
-		return handler.utils.Response(c, false, http.StatusUnauthorized, "Invalid password", nil)
+		handler.logger.Error("failed to upsert otp", zap.Error(err))
+		return handler.utils.Response(c, false, fiber.StatusInternalServerError, "Internal server error", nil)
 	}
 
-	token, err := handler.jwtManager.GenerateJWT(userDomain.Id, userDomain.Email, userDomain.PhoneNumber)
+	err = handler.mailer.SendEmail(c.Context(), userDomain.Email, otp)
 	if err != nil {
-		handler.logger.Error("failed to generate jwt token", zap.Error(err))
-		return handler.utils.Response(c, false, http.StatusInternalServerError, "Internal server error", nil)
+		handler.logger.Error("failed to send otp", zap.Error(err))
+		return handler.utils.Response(c, false, fiber.StatusBadGateway, "Failed to send OTP", nil)
 	}
 
-	return handler.utils.Response(c, true, http.StatusOK, "Sign in successful", fiber.Map{
-		"token": token,
-	})
+	return handler.utils.Response(c, true, http.StatusOK, "OTP sent successfully", nil)
 }

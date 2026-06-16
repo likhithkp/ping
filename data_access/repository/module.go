@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"github.com/likhithkp/ping/data_access/repository/otp"
 	"github.com/likhithkp/ping/data_access/repository/user"
 	"go.uber.org/fx"
 )
@@ -8,5 +9,6 @@ import (
 var Module = fx.Module("data_access-repository",
 	fx.Provide(
 		user.NewUserRepository,
+		otp.NewOtpRepository,
 	),
 )
