@@ -1,5 +1,12 @@
 package repository
 
-import "go.uber.org/fx"
+import (
+	"github.com/likhithkp/ping/data_access/repository/user"
+	"go.uber.org/fx"
+)
 
-var Module = fx.Module("data_access-repository")
+var Module = fx.Module("data_access-repository",
+	fx.Provide(
+		user.NewUserRepository,
+	),
+)

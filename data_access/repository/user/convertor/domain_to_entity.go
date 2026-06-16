@@ -1,8 +1,6 @@
 package convertor
 
 import (
-	"fmt"
-
 	userEntity "github.com/likhithkp/ping/data_access/mongo/user"
 	"github.com/likhithkp/ping/domain"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -10,10 +8,13 @@ import (
 
 func ConvertDomainToEntity(domain domain.UserDomain) (*userEntity.UserEntity, error) {
 
-	oid, err := primitive.ObjectIDFromHex(domain.Id)
-	if err != nil {
-		fmt.Printf("[domain_to_entity.go] %s ", err.Error())
-		return nil, err
+	var oid primitive.ObjectID
+	var err error
+	if domain.Id != "" {
+		oid, err = primitive.ObjectIDFromHex(domain.Id)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &userEntity.UserEntity{

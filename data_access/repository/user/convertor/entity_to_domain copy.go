@@ -5,8 +5,8 @@ import (
 	"github.com/likhithkp/ping/domain"
 )
 
-func ConvertEntityToDomain(entity *userEntity.UserEntity) domain.UserDomain {
-	return domain.UserDomain{
+func ConvertEntityToDomain(entity *userEntity.UserEntity) *domain.UserDomain {
+	return &domain.UserDomain{
 		Id:          entity.Id.Hex(),
 		FirstName:   entity.FirstName,
 		LastName:    entity.LastName,
