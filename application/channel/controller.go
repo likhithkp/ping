@@ -9,17 +9,20 @@ type Controller struct {
 	createChannelHandler     *handler.CreateChannelHandler
 	getChannelListHandler    *handler.GetChannelListHandler
 	getChannelDetailsHandler *handler.GetChannelDetailsHandler
+	deleteChannelHandler     *handler.DeleteChannelHandler
 }
 
 func NewController(
 	createChannelHandler *handler.CreateChannelHandler,
 	getChannelListHandler *handler.GetChannelListHandler,
 	getChannelDetailsHandler *handler.GetChannelDetailsHandler,
+	deleteChannelHandler *handler.DeleteChannelHandler,
 ) *Controller {
 	return &Controller{
 		createChannelHandler:     createChannelHandler,
 		getChannelListHandler:    getChannelListHandler,
 		getChannelDetailsHandler: getChannelDetailsHandler,
+		deleteChannelHandler:     deleteChannelHandler,
 	}
 }
 
@@ -33,4 +36,8 @@ func (controller *Controller) GetChannelList(c *fiber.Ctx) error {
 
 func (controller *Controller) getChannelDetails(c *fiber.Ctx) error {
 	return controller.getChannelDetailsHandler.GetChannelDetails(c)
+}
+
+func (controller *Controller) DeleteChannel(c *fiber.Ctx) error {
+	return controller.deleteChannelHandler.DeleteChannel(c)
 }

@@ -76,3 +76,11 @@ func (repository *ChannelRepository) GetChannelsByUserId(ctx context.Context, id
 	}
 	return channelDomain, nil
 }
+
+func (repository *ChannelRepository) DeleteChannel(ctx context.Context, id string) error {
+	err := repository.channelMongoService.DeleteChannel(ctx, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}

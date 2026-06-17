@@ -1,8 +1,8 @@
 # Functional
 
 1. Sign-up (done), sign-in (done), reset-password (done),
-2. Edit,get profile.
-3. Channel: create-channel, get-channel-list, delete-channel
+2. Edit,get profile (done).
+3. Channel: create-channel, get-channel-list, delete-channel (done)
 
 4. Start group chats (limit 100 users)
 5. Send-receive messages

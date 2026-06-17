@@ -49,12 +49,12 @@ func (handler *ForgotPasswordHandler) ForgotPassword(c *fiber.Ctx) error {
 
 	err := c.BodyParser(user)
 	if err != nil {
-		handler.logger.Error("failed to parse body", zap.Error(err))
-		return handler.utils.Response(c, false, http.StatusUnprocessableEntity, "Error while parsing forgot password body", nil)
+		handler.logger.Error("failed to parse request body", zap.Error(err))
+		return handler.utils.Response(c, false, http.StatusUnprocessableEntity, "Error while parsing request body", nil)
 	}
 
 	if user.IdentifierType == "" {
-		return handler.utils.Response(c, false, http.StatusBadRequest, "Missing fields", nil)
+		return handler.utils.Response(c, false, http.StatusBadRequest, "Missing identifier type", nil)
 	}
 	if user.IdentifierType == _const.EMAIL && user.Email == "" {
 		return handler.utils.Response(c, false, http.StatusBadRequest, "Missing email", nil)
@@ -67,20 +67,18 @@ func (handler *ForgotPasswordHandler) ForgotPassword(c *fiber.Ctx) error {
 	if user.IdentifierType == _const.EMAIL {
 		userDomain, err = handler.userRepository.GetUserByEmail(c.Context(), user.Email)
 		if err != nil {
-			handler.logger.Error("failed to get user by email", zap.Error(err))
+			handler.logger.Error("failed to fetch user by email", zap.Error(err))
 			return handler.utils.Response(c, false, http.StatusInternalServerError, "Internal server error", nil)
 		}
-
 		if userDomain == nil {
 			return handler.utils.Response(c, false, http.StatusNotFound, "User with email "+user.Email+" does not exist", nil)
 		}
 	} else {
 		userDomain, err = handler.userRepository.GetUserByPhoneNumber(c.Context(), user.PhoneNumber)
 		if err != nil {
-			handler.logger.Error("failed to get user by phonenumber", zap.Error(err))
+			handler.logger.Error("failed to fetch user by phonenumber", zap.Error(err))
 			return handler.utils.Response(c, false, http.StatusInternalServerError, "Internal server error", nil)
 		}
-
 		if userDomain == nil {
 			return handler.utils.Response(c, false, http.StatusNotFound, "User with number "+user.PhoneNumber+" does not exist", nil)
 		}
@@ -96,7 +94,7 @@ func (handler *ForgotPasswordHandler) ForgotPassword(c *fiber.Ctx) error {
 
 	err = handler.mailer.SendEmail(c.Context(), userDomain.Email, otp)
 	if err != nil {
-		handler.logger.Error("failed to send otp", zap.Error(err))
+		handler.logger.Error("failed to send the email", zap.Error(err))
 		return handler.utils.Response(c, false, fiber.StatusBadGateway, "Failed to send OTP", nil)
 	}
 

@@ -35,10 +35,9 @@ func (handler *ResetPasswordHandler) ResetPassword(c *fiber.Ctx) error {
 
 	err := c.BodyParser(req)
 	if err != nil {
-		handler.logger.Error("failed to parse body", zap.Error(err))
-		return handler.utils.Response(c, false, http.StatusUnprocessableEntity, "Error while parsing signin body", nil)
+		handler.logger.Error("failed to parse request body", zap.Error(err))
+		return handler.utils.Response(c, false, http.StatusUnprocessableEntity, "Error while parsing request body", nil)
 	}
-
 	if req.NewPassword == "" ||
 		req.OldPassword == "" {
 		return handler.utils.Response(c, false, http.StatusBadRequest, "Missing fields", nil)
@@ -47,7 +46,7 @@ func (handler *ResetPasswordHandler) ResetPassword(c *fiber.Ctx) error {
 	var userDomain *domain.UserDomain
 	userDomain, err = handler.userRepository.GetUserByEmail(c.Context(), req.Email)
 	if err != nil {
-		handler.logger.Error("failed to get req by email", zap.Error(err))
+		handler.logger.Error("failed to fetch user by email", zap.Error(err))
 		return handler.utils.Response(c, false, http.StatusInternalServerError, "Internal server error", nil)
 	}
 	if userDomain == nil {
@@ -61,7 +60,7 @@ func (handler *ResetPasswordHandler) ResetPassword(c *fiber.Ctx) error {
 	}
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
 	if err != nil {
-		handler.logger.Error("failed to generate new  password", zap.Error(err))
+		handler.logger.Error("failed to generate new password", zap.Error(err))
 		return handler.utils.Response(c, false, http.StatusInternalServerError, "Internal server error", nil)
 	}
 

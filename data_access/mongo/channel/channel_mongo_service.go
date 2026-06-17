@@ -89,3 +89,18 @@ func (service *ChannelMongoService) GetChannelsByUserId(ctx context.Context, id 
 
 	return channels, nil
 }
+
+func (service *ChannelMongoService) DeleteChannel(ctx context.Context, id string) error {
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+
+	filter := bson.M{"_id": oid}
+	_, err = service.collection.DeleteOne(ctx, filter)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
