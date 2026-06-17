@@ -18,21 +18,34 @@ func NewUserRepository(userMongoService *userMongoService.UserMongoService) *Use
 	}
 }
 
-func (userRepository *UserRepository) UpsertUser(ctx context.Context, userDomain *domain.UserDomain) error {
+func (repository *UserRepository) UpdateUser(ctx context.Context, userDomain *domain.UserDomain) error {
 	userEntity, err := convertor.ConvertDomainToEntity(*userDomain)
 	if err != nil {
 		return err
 	}
 
-	err = userRepository.userMongoService.UpsertUser(ctx, userEntity)
+	err = repository.userMongoService.UpdateUser(ctx, userEntity)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (userRepository *UserRepository) GetUserById(ctx context.Context, id string) (userDomain *domain.UserDomain, err error) {
-	userEntity, err := userRepository.userMongoService.GetUserById(ctx, id)
+func (repository *UserRepository) InsertUser(ctx context.Context, userDomain *domain.UserDomain) error {
+	userEntity, err := convertor.ConvertDomainToEntity(*userDomain)
+	if err != nil {
+		return err
+	}
+
+	err = repository.userMongoService.InsertUser(ctx, userEntity)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (repository *UserRepository) GetUserById(ctx context.Context, id string) (userDomain *domain.UserDomain, err error) {
+	userEntity, err := repository.userMongoService.GetUserById(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -44,8 +57,8 @@ func (userRepository *UserRepository) GetUserById(ctx context.Context, id string
 	return userDomain, nil
 }
 
-func (userRepository *UserRepository) GetUserByEmail(ctx context.Context, email string) (userDomain *domain.UserDomain, err error) {
-	userEntity, err := userRepository.userMongoService.GetUserByEmail(ctx, email)
+func (repository *UserRepository) GetUserByEmail(ctx context.Context, email string) (userDomain *domain.UserDomain, err error) {
+	userEntity, err := repository.userMongoService.GetUserByEmail(ctx, email)
 	if err != nil {
 		return nil, err
 	}
@@ -57,8 +70,8 @@ func (userRepository *UserRepository) GetUserByEmail(ctx context.Context, email 
 	return userDomain, nil
 }
 
-func (userRepository *UserRepository) GetUserByPhoneNumber(ctx context.Context, email string) (userDomain *domain.UserDomain, err error) {
-	userEntity, err := userRepository.userMongoService.GetUserByPhoneNumber(ctx, email)
+func (repository *UserRepository) GetUserByPhoneNumber(ctx context.Context, email string) (userDomain *domain.UserDomain, err error) {
+	userEntity, err := repository.userMongoService.GetUserByPhoneNumber(ctx, email)
 	if err != nil {
 		return nil, err
 	}

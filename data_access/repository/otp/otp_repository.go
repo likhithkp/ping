@@ -18,21 +18,21 @@ func NewOtpRepository(otpMongoService *otpMongoService.OtpMongoService) *OtpRepo
 	}
 }
 
-func (otpRepository *OtpRepository) UpsertOtp(ctx context.Context, otpDomain *domain.OtpDomain) error {
+func (repository *OtpRepository) UpsertOtp(ctx context.Context, otpDomain *domain.OtpDomain) error {
 	otpEntity, err := convertor.ConvertDomainToEntity(*otpDomain)
 	if err != nil {
 		return err
 	}
 
-	err = otpRepository.otpMongoService.UpsertOtp(ctx, otpEntity)
+	err = repository.otpMongoService.UpsertOtp(ctx, otpEntity)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (otpRepository *OtpRepository) GetLatestOtpByEmail(ctx context.Context, email string) (otpDomain *domain.OtpDomain, err error) {
-	otpEntity, err := otpRepository.otpMongoService.GetLatestOtpByEmail(ctx, email)
+func (repository *OtpRepository) GetLatestOtpByEmail(ctx context.Context, email string) (otpDomain *domain.OtpDomain, err error) {
+	otpEntity, err := repository.otpMongoService.GetLatestOtpByEmail(ctx, email)
 	if err != nil {
 		return nil, err
 	}

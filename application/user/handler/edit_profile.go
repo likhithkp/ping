@@ -108,7 +108,7 @@ func (handler *EditProfileHandler) EditProfile(c *fiber.Ctx) error {
 	}
 
 	updatedUserDomain.Password = userDomain.Password
-	err = handler.userRepository.UpsertUser(c.Context(), updatedUserDomain)
+	err = handler.userRepository.UpdateUser(c.Context(), updatedUserDomain)
 	if err != nil {
 		handler.logger.Error("failed to upsert user", zap.Error(err))
 		return handler.utils.Response(c, false, http.StatusInternalServerError, "Failed to update user", nil)

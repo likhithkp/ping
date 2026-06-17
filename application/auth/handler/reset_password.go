@@ -66,7 +66,7 @@ func (handler *ResetPasswordHandler) ResetPassword(c *fiber.Ctx) error {
 	}
 
 	userDomain.Password = string(hashedPassword)
-	err = handler.userRepository.UpsertUser(c.Context(), userDomain)
+	err = handler.userRepository.UpdateUser(c.Context(), userDomain)
 	if err != nil {
 		handler.logger.Error("failed to update password", zap.Error(err))
 		return handler.utils.Response(c, false, http.StatusInternalServerError, "Internal server error", nil)

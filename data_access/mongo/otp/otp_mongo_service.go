@@ -19,7 +19,7 @@ func NewOtpMongoService(database *mongo.Database) *OtpMongoService {
 	}
 }
 
-func (otpMongoService *OtpMongoService) UpsertOtp(ctx context.Context, otp *OtpEntity) error {
+func (service *OtpMongoService) UpsertOtp(ctx context.Context, otp *OtpEntity) error {
 	if otp.Id == primitive.NilObjectID {
 		otp.Id = primitive.NewObjectID()
 	}
@@ -27,7 +27,7 @@ func (otpMongoService *OtpMongoService) UpsertOtp(ctx context.Context, otp *OtpE
 	filter := bson.M{"_id": otp.Id}
 	update := bson.M{"$set": otp}
 	opts := options.Update().SetUpsert(true)
-	_, err := otpMongoService.collection.UpdateOne(ctx, filter, update, opts)
+	_, err := service.collection.UpdateOne(ctx, filter, update, opts)
 	if err != nil {
 		return err
 	}
@@ -35,11 +35,11 @@ func (otpMongoService *OtpMongoService) UpsertOtp(ctx context.Context, otp *OtpE
 	return nil
 }
 
-func (otpMongoService *OtpMongoService) GetLatestOtpByEmail(ctx context.Context, email string) (otpEntity *OtpEntity, err error) {
+func (service *OtpMongoService) GetLatestOtpByEmail(ctx context.Context, email string) (otpEntity *OtpEntity, err error) {
 	var otp OtpEntity
 	filter := bson.M{"email": email}
 
-	err = otpMongoService.collection.FindOne(ctx, filter, options.FindOne().SetSort(bson.D{{Key: "createdAt", Value: -1}})).Decode(&otp)
+	err = service.collection.FindOne(ctx, filter, options.FindOne().SetSort(bson.D{{Key: "createdAt", Value: -1}})).Decode(&otp)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return nil, err
