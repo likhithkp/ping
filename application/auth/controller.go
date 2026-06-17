@@ -5,7 +5,7 @@ import (
 	"github.com/likhithkp/ping/application/auth/handler"
 )
 
-type UserController struct {
+type Controller struct {
 	signUpHandler         *handler.SignUpHandler
 	signInHandler         *handler.SignInHandler
 	forgotPasswordHandler *handler.ForgotPasswordHandler
@@ -13,14 +13,14 @@ type UserController struct {
 	resetPasswordHandler  *handler.ResetPasswordHandler
 }
 
-func NewUserController(
+func NewController(
 	signUpHandler *handler.SignUpHandler,
 	signInHandler *handler.SignInHandler,
 	forgotPasswordHandler *handler.ForgotPasswordHandler,
 	verifyOtpHandler *handler.VerifyOtpHandler,
 	resetPasswordHandler *handler.ResetPasswordHandler,
-) *UserController {
-	return &UserController{
+) *Controller {
+	return &Controller{
 		signUpHandler:         signUpHandler,
 		signInHandler:         signInHandler,
 		forgotPasswordHandler: forgotPasswordHandler,
@@ -29,22 +29,22 @@ func NewUserController(
 	}
 }
 
-func (userController *UserController) SignUp(c *fiber.Ctx) error {
-	return userController.signUpHandler.SignUp(c)
+func (controller *Controller) SignUp(c *fiber.Ctx) error {
+	return controller.signUpHandler.SignUp(c)
 }
 
-func (userController *UserController) SignIn(c *fiber.Ctx) error {
-	return userController.signInHandler.SignIn(c)
+func (controller *Controller) SignIn(c *fiber.Ctx) error {
+	return controller.signInHandler.SignIn(c)
 }
 
-func (userController *UserController) ForgotPassword(c *fiber.Ctx) error {
-	return userController.forgotPasswordHandler.ForgotPassword(c)
+func (controller *Controller) ForgotPassword(c *fiber.Ctx) error {
+	return controller.forgotPasswordHandler.ForgotPassword(c)
 }
 
-func (userController *UserController) VerifyOtp(c *fiber.Ctx) error {
-	return userController.verifyOtpHandler.VerifyOtp(c)
+func (controller *Controller) VerifyOtp(c *fiber.Ctx) error {
+	return controller.verifyOtpHandler.VerifyOtp(c)
 }
 
-func (userController *UserController) ResetPassword(c *fiber.Ctx) error {
-	return userController.resetPasswordHandler.ResetPassword(c)
+func (controller *Controller) ResetPassword(c *fiber.Ctx) error {
+	return controller.resetPasswordHandler.ResetPassword(c)
 }

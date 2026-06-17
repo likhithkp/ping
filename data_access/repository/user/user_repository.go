@@ -31,6 +31,19 @@ func (userRepository *UserRepository) UpsertUser(ctx context.Context, userDomain
 	return nil
 }
 
+func (userRepository *UserRepository) GetUserById(ctx context.Context, id string) (userDomain *domain.UserDomain, err error) {
+	userEntity, err := userRepository.userMongoService.GetUserById(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if userEntity == nil {
+		return nil, nil
+	}
+
+	userDomain = convertor.ConvertEntityToDomain(userEntity)
+	return userDomain, nil
+}
+
 func (userRepository *UserRepository) GetUserByEmail(ctx context.Context, email string) (userDomain *domain.UserDomain, err error) {
 	userEntity, err := userRepository.userMongoService.GetUserByEmail(ctx, email)
 	if err != nil {

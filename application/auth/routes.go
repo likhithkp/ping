@@ -2,7 +2,7 @@ package auth
 
 import "github.com/gofiber/fiber/v2"
 
-func RegisterUserRoutes(app *fiber.App, controller *UserController) {
+func RegisterUserRoutes(app *fiber.App, controller *Controller) {
 	appGroup := app.Group("api/v1/auth")
 
 	appGroup.Post("/login", controller.signInHandler.SignIn)

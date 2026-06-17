@@ -36,6 +36,26 @@ func (userMongoService *UserMongoService) UpsertUser(ctx context.Context, user *
 	return nil
 }
 
+func (userMongoService *UserMongoService) GetUserById(ctx context.Context, id string) (userEntity *UserEntity, err error) {
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
+
+	var user UserEntity
+	filter := bson.M{"_id": oid}
+
+	err = userMongoService.collection.FindOne(ctx, filter).Decode(&user)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &user, nil
+}
+
 func (userMongoService *UserMongoService) GetUserByEmail(ctx context.Context, email string) (userEntity *UserEntity, err error) {
 	var user UserEntity
 	filter := bson.M{"email": email}

@@ -5,14 +5,14 @@ import (
 	"go.uber.org/fx"
 )
 
-var Module = fx.Module("application-user",
+var Module = fx.Module("application-auth",
 	fx.Provide(
 		handler.NewSignUpHandler,
 		handler.NewSignInHandler,
 		handler.NewForgotPasswordHandler,
 		handler.NewVerifyOtpHandler,
 		handler.NewResetPasswordHandler,
-		NewUserController,
+		NewController,
 	),
 	fx.Invoke(RegisterUserRoutes),
 )

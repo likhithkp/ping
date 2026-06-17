@@ -1,13 +1,15 @@
 # Functional
 
-1. User sign-up, sign-in, reset-password, edit profile.
+1. Sign-up (done), sign-in (done), reset-password (done),
+2. Edit,get profile.
+3. Channel: create-channel, get-channel-list, delete-channel
 
-2. Start group chats (limit 100 users)
-3. Send-receive messages
-4. Send/receive media
-5. Access messages after they've been offline
+4. Start group chats (limit 100 users)
+5. Send-receive messages
+6. Send/receive media
+7. Access messages after they've been offline
 
-6. Audio/Video calling.
+8. Audio/Video calling.
 
 # Non-Functional
 
