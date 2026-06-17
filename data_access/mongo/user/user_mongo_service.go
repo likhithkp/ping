@@ -86,3 +86,29 @@ func (service *UserMongoService) GetUserByPhoneNumber(ctx context.Context, phone
 
 	return &user, nil
 }
+
+func (service *UserMongoService) GetUsersByIDs(ctx context.Context, userIDs []string) ([]*UserEntity, error) {
+	var objectIDs []primitive.ObjectID
+	for _, id := range userIDs {
+		oid, err := primitive.ObjectIDFromHex(id)
+		if err != nil {
+			return nil, err
+		}
+		objectIDs = append(objectIDs, oid)
+	}
+
+	filter := bson.M{"_id": bson.M{"$in": objectIDs}}
+
+	cursor, err := service.collection.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var users []*UserEntity
+	if err := cursor.All(ctx, &users); err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}

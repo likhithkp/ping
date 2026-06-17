@@ -1,4 +1,4 @@
-package user
+package channel
 
 import (
 	"context"

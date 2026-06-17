@@ -8,6 +8,8 @@ import (
 var Module = fx.Module("application-channel",
 	fx.Provide(
 		handler.NewCreateChannelHandler,
+		handler.NewGetChannelListHandler,
+		handler.NewGetChannelDetailsHandler,
 		NewController,
 	),
 	fx.Invoke(RegisterChannelRoutes),

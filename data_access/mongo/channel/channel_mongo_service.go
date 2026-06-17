@@ -64,28 +64,27 @@ func (service *ChannelMongoService) GetChannelsByUserId(ctx context.Context, id 
 	}
 
 	filter := bson.M{
-		"user.userId": bson.M{
-			"$in": oid,
-		},
+		"users.userId": oid,
 	}
 
 	cursor, err := service.collection.Find(ctx, filter)
 	if err != nil {
-		if errors.Is(err, mongo.ErrNoDocuments) {
-			return nil, nil
-		}
 		return nil, err
 	}
+	defer cursor.Close(ctx)
 
 	var channels []*ChannelEntity
 	for cursor.Next(ctx) {
-		var channel *ChannelEntity
-		err := cursor.Decode(channel)
+		var channel ChannelEntity
+		err := cursor.Decode(&channel)
 		if err != nil {
 			return nil, err
 		}
+		channels = append(channels, &channel)
+	}
 
-		channels = append(channels, channel)
+	if err := cursor.Err(); err != nil {
+		return nil, err
 	}
 
 	return channels, nil

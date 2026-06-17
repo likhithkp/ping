@@ -5,6 +5,7 @@ import (
 
 	"github.com/likhithkp/ping/application/auth/dto"
 	"github.com/likhithkp/ping/domain"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func ConvertSignUpDtoToDomain(requestBody *dto.SignUpRequest) (*domain.UserDomain, error) {
@@ -15,6 +16,7 @@ func ConvertSignUpDtoToDomain(requestBody *dto.SignUpRequest) (*domain.UserDomai
 	}
 
 	return &domain.UserDomain{
+		Id:          primitive.NewObjectID().Hex(),
 		FirstName:   requestBody.FirstName,
 		LastName:    requestBody.LastName,
 		UserName:    requestBody.UserName,
