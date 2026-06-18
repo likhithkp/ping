@@ -7,19 +7,19 @@ import (
 )
 
 type Controller struct {
-	wsHandler *handler.WsHandler
+	WsConnectHandler *handler.WsConnectHandler
 }
 
 func NewController(
-	wsHandler *handler.WsHandler,
+	WsConnectHandler *handler.WsConnectHandler,
 ) *Controller {
 	return &Controller{
-		wsHandler: wsHandler,
+		WsConnectHandler: WsConnectHandler,
 	}
 }
 
 func (controller *Controller) WebSocketUpgrade() fiber.Handler {
 	return websocket.New(func(conn *websocket.Conn) {
-		controller.wsHandler.Ws(conn)
+		controller.WsConnectHandler.Ws(conn)
 	})
 }

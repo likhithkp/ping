@@ -18,8 +18,8 @@ func NewChatRepository(
 	}
 }
 
-func (repository *ChatRepository) SetMessage(ctx context.Context, userId string, longUrl string) error {
-	err := repository.chatRedisService.SetMessage(ctx, userId, longUrl)
+func (repository *ChatRepository) SetMessage(ctx context.Context, userId, messageId, longUrl string) error {
+	err := repository.chatRedisService.SetMessage(ctx, userId, messageId, longUrl)
 	if err != nil {
 		return err
 	}
@@ -36,8 +36,8 @@ func (repository *ChatRepository) GetMessage(ctx context.Context, userId string)
 	return msg, nil
 }
 
-func (repository *ChatRepository) DeleteMessage(ctx context.Context, userId string) error {
-	err := repository.chatRedisService.DeleteMessage(ctx, userId)
+func (repository *ChatRepository) DeleteMessage(ctx context.Context, userId, messageId string) error {
+	err := repository.chatRedisService.DeleteMessage(ctx, userId, messageId)
 	if err != nil {
 		return nil
 	}

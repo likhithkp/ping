@@ -23,6 +23,7 @@ type Env struct {
 	AwsSecretAccessKey string
 	RedisAddress       string
 	RedisPassword      string
+	RetryCount         string
 }
 
 func NewEnv() (*Env, error) {
@@ -89,6 +90,11 @@ func NewEnv() (*Env, error) {
 		return nil, errors.New("REDIS_PASSWORD is empty")
 	}
 
+	retryCount := os.Getenv("RETRY_COUNT")
+	if len(retryCount) == 0 {
+		return nil, errors.New("RETRY_COUNT is empty")
+	}
+
 	return &Env{
 		MongoUri:           databaseUri,
 		Database:           database,
@@ -101,5 +107,6 @@ func NewEnv() (*Env, error) {
 		AwsSecretAccessKey: awsSecretAccessKey,
 		RedisAddress:       redisAddress,
 		RedisPassword:      redisPassword,
+		RetryCount:         retryCount,
 	}, nil
 }

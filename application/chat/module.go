@@ -7,7 +7,7 @@ import (
 
 var Module = fx.Module("application-chat",
 	fx.Provide(
-		handler.NewWsHandler,
+		handler.NewWsConnectHandler,
 		NewController,
 	),
 	fx.Invoke(RegisterChatRoutes),
