@@ -12,6 +12,7 @@ import (
 	"github.com/likhithkp/ping/application/auth/convertor"
 	"github.com/likhithkp/ping/application/auth/dto"
 	"github.com/likhithkp/ping/data_access/repository/user"
+	"github.com/likhithkp/ping/domain"
 	"github.com/likhithkp/ping/utils/other"
 	"github.com/likhithkp/ping/utils/storage"
 	"go.uber.org/zap"
@@ -57,6 +58,25 @@ func (handler *SignUpHandler) SignUp(c *fiber.Ctx) error {
 		newUser.PhoneNumber == "" ||
 		newUser.Email == "" {
 		return handler.utils.Response(c, false, http.StatusBadRequest, "Missing fields", nil)
+	}
+
+	var existingDomain *domain.UserDomain
+	existingDomain, err = handler.userRepository.GetUserByEmail(c.Context(), newUser.Email)
+	if err != nil {
+		handler.logger.Error("failed to check existing user by email", zap.Error(err))
+		return handler.utils.Response(c, false, http.StatusInternalServerError, "Internal server error", nil)
+	}
+	if existingDomain != nil {
+		return handler.utils.Response(c, false, http.StatusConflict, "User with the email "+newUser.Email+" alredy exists", nil)
+	}
+
+	existingDomain, err = handler.userRepository.GetUserByPhoneNumber(c.Context(), newUser.PhoneNumber)
+	if err != nil {
+		handler.logger.Error("failed to check existing user by phonenumber", zap.Error(err))
+		return handler.utils.Response(c, false, http.StatusInternalServerError, "Internal server error", nil)
+	}
+	if existingDomain != nil {
+		return handler.utils.Response(c, false, http.StatusConflict, "User with the number "+newUser.PhoneNumber+" alredy exists", nil)
 	}
 
 	userDomain, err := convertor.ConvertSignUpDtoToDomain(newUser)

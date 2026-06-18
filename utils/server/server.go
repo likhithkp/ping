@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 
+	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
@@ -26,18 +27,26 @@ func RunHttpServer(lc fx.Lifecycle, env *config.Env, app *fiber.App, logger *zap
 		return c.SendString("Success")
 	})
 
+	app.Use("/ws", func(c *fiber.Ctx) error {
+		if websocket.IsWebSocketUpgrade(c) {
+			c.Locals("allowed", true)
+			return c.Next()
+		}
+		return fiber.ErrUpgradeRequired
+	})
+
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			go func() {
-				logger.Info("[server.go] Starting Fiber HTTP server", zap.String("port", env.Port))
+				logger.Info("[server.go] Starting server", zap.String("port", env.Port))
 				if err := app.Listen(env.Port); err != nil {
-					logger.Fatal("[server.go] Failed to start Fiber server", zap.Error(err))
+					logger.Fatal("[server.go] Failed to start server", zap.Error(err))
 				}
 			}()
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
-			logger.Info("Shutting down Fiber HTTP server")
+			logger.Info("Shutting down server")
 			return app.Shutdown()
 		},
 	})

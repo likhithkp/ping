@@ -21,6 +21,8 @@ type Env struct {
 	AwsRegion          string
 	AwsAccessKey       string
 	AwsSecretAccessKey string
+	RedisAddress       string
+	RedisPassword      string
 }
 
 func NewEnv() (*Env, error) {
@@ -66,13 +68,25 @@ func NewEnv() (*Env, error) {
 	if len(awsRegion) == 0 {
 		return nil, errors.New("AWS_REGION is empty")
 	}
+
 	awsAccessKey := os.Getenv("AWS_ACCESS_KEY")
 	if len(awsAccessKey) == 0 {
 		return nil, errors.New("AWS_ACCESS_KEY is empty")
 	}
+
 	awsSecretAccessKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
 	if len(awsSecretAccessKey) == 0 {
 		return nil, errors.New("AWS_SECRET_ACCESS_KEY is empty")
+	}
+
+	redisAddress := os.Getenv("REDIS_ADDR")
+	if len(redisAddress) == 0 {
+		return nil, errors.New("REDIS_ADDR is empty")
+	}
+
+	redisPassword := os.Getenv("REDIS_PASSWORD")
+	if len(redisPassword) == 0 {
+		return nil, errors.New("REDIS_PASSWORD is empty")
 	}
 
 	return &Env{
@@ -85,5 +99,7 @@ func NewEnv() (*Env, error) {
 		AwsRegion:          awsRegion,
 		AwsAccessKey:       awsAccessKey,
 		AwsSecretAccessKey: awsSecretAccessKey,
+		RedisAddress:       redisAddress,
+		RedisPassword:      redisPassword,
 	}, nil
 }
