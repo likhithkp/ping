@@ -18,8 +18,17 @@ func NewChatRepository(
 	}
 }
 
-func (repository *ChatRepository) SetMessage(ctx context.Context, userId, messageId, longUrl string) error {
-	err := repository.chatRedisService.SetMessage(ctx, userId, messageId, longUrl)
+func (repository *ChatRepository) SetMessage(ctx context.Context, userId, messageId, message string) error {
+	err := repository.chatRedisService.SetMessage(ctx, userId, messageId, message)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (repository *ChatRepository) UpdateMessage(ctx context.Context, userId, messageId, message string) error {
+	err := repository.chatRedisService.UpdateMessage(ctx, userId, messageId, message)
 	if err != nil {
 		return err
 	}

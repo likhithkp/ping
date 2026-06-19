@@ -86,9 +86,9 @@ func NewEnv() (*Env, error) {
 	}
 
 	redisPassword := os.Getenv("REDIS_PASSWORD")
-	if len(redisPassword) == 0 {
-		return nil, errors.New("REDIS_PASSWORD is empty")
-	}
+	// if len(redisPassword) == 0 {
+	// return nil, errors.New("REDIS_PASSWORD is empty")
+	// }
 
 	retryCount := os.Getenv("RETRY_COUNT")
 	if len(retryCount) == 0 {

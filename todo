@@ -4,12 +4,13 @@
 2. Edit,get profile (done).
 3. Channel: create-channel, get-channel-list, delete-channel (done)
 
-4. Start group chats (limit 100 users)
-5. Send-receive messages
+4. Start group chats (limit 100 users) (done)
+5. Send-receive messages (done)
 6. Send/receive media
-7. Access messages after they've been offline
+7. Access messages after they've been offline (done)
+8. Ack offline and online (done) message.
 
-8. Audio/Video calling.
+9. Audio/Video calling.
 
 # Non-Functional
 

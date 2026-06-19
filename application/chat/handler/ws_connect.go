@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"strconv"
 
 	"github.com/gofiber/contrib/websocket"
@@ -59,126 +58,129 @@ func (handler *WsConnectHandler) Ws(c *websocket.Conn) error {
 	}
 
 	var (
-		mt   int
-		msg  []byte
-		err  error
-		conn *websocket.Conn
-		ok   bool
+		err           error
+		conn          *websocket.Conn
+		online        bool
+		message       dto.Message
+		channelDomain *domain.ChannelDomain
+		msgBytes      []byte
 	)
 
 	connectionmap.Add(userId, c)
 	defer connectionmap.Remove(userId)
 
-	offlineMsgBytes, err := fetchOfflineMesages(userId, handler.chatRepository, handler.env, c)
+	err = fetchOfflineMesages(userId, handler.chatRepository, handler.env, c)
 	if err != nil {
 		handler.logger.Error("failed to fetch offline messages", zap.Error(err))
 	}
 
 	for {
 		//Receive
-		mt, msg, err = c.ReadMessage()
+		_, msg, err := readMessage(c)
 		if err != nil {
-			if websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
-				handler.logger.Error("websocket disconnected", zap.Error(err))
-			} else if websocket.IsUnexpectedCloseError(err) {
-				handler.logger.Error("websocket closed unexpectedly", zap.Error(err))
-			} else {
-				handler.logger.Error("websocket disconnected due to an internal server error", zap.Error(err))
-			}
-			break
+			handler.logger.Error("error while receiving message", zap.Error(err))
+			return err
 		}
 
-		fmt.Printf("%s", msg)
-
-		var message dto.Message
-		var channelDomain *domain.ChannelDomain
-
-		err := json.Unmarshal(msg, &message)
+		err = json.Unmarshal(msg, &message)
 		if err != nil {
 			return websocket.ErrBadHandshake
 		}
 
-		switch message.Type {
-		case _const.MESSAGE:
-			channelDomain, err = handler.channelRepository.GetChannelById(context.Background(), message.ChannelId)
-			if err != nil {
-				handler.logger.Error("error while validating channel", zap.Error(err))
-				return err
-			}
-			if channelDomain == nil {
-				handler.logger.Error("channel not found", zap.Error(err))
-				return websocket.ErrBadHandshake
-			}
+		channelDomain, err = handler.channelRepository.GetChannelById(context.Background(), message.ChannelId)
+		if err != nil {
+			handler.logger.Error("error while validating channel", zap.Error(err))
+			return err
+		}
+		if channelDomain == nil {
+			handler.logger.Error("channel not found", zap.Error(err))
+			return websocket.ErrBadHandshake
+		}
 
-			var receiver string
-			for _, user := range channelDomain.Users {
-				if user.UserId != userId {
-					receiver = user.UserId
-					break
-				}
+		var receiver string
+		for _, user := range channelDomain.Users {
+			if user.UserId != userId {
+				receiver = user.UserId
+				break
 			}
+		}
 
-			conn, ok = connectionmap.Connections[receiver]
-			ackMessage(mt, msg, conn)
-		case _const.ACK:
-			fmt.Printf("acked: %s", message.Id)
+		conn, online = connectionmap.Connections[receiver]
+
+		if message.Type == _const.ACK {
 			err := handler.chatRepository.DeleteMessage(ctx.Background, message.SenderId, message.Id)
 			if err != nil {
-				handler.logger.Error("error while deleting the message from redis", zap.Error(err))
+				handler.logger.Error("error while deleting acknowledged message in redis", zap.Error(err))
 			}
 		}
 
 		//Send
-		if ok {
-			if message.Id == "" {
-				message.Id = primitive.NewObjectID().Hex()
-			}
-
-			msg, err = json.Marshal(message)
+		message.Id = primitive.NewObjectID().Hex()
+		if online {
+			msgBytes, err = json.Marshal(message)
 			if err != nil {
 				return websocket.ErrBadHandshake
 			}
 
-			if message.Type == _const.MESSAGE {
-				err = handler.chatRepository.SetMessage(ctx.Background, userId, message.Id, string(msg))
+			if message.Type != _const.ACK {
+				err = handler.chatRepository.SetMessage(ctx.Background, userId, message.Id, string(msgBytes))
 				if err != nil {
 					handler.logger.Error("error while storing message in redis", zap.Error(err))
 				}
 			}
 
-			err = conn.WriteMessage(mt, msg)
+			retryCount, err := strconv.Atoi(handler.env.RetryCount)
 			if err != nil {
-				var retryCount int = 5
-				retryCount, err := strconv.Atoi(handler.env.RetryCount)
-				if err != nil {
-					handler.logger.Error("failed to convert retry count to int", zap.Error(err))
-				}
+				handler.logger.Error("failed to convert retry count to int", zap.Error(err))
+			}
 
-				err = sendWithRetry(websocket.TextMessage, offlineMsgBytes, c, retryCount)
-				if err != nil {
-					handler.logger.Error("failed to send offline mesages", zap.Error(err))
-				}
-			} else {
-				go handler.chatRepository.DeleteMessage(ctx.Background, userId, message.Id)
+			err = sendMessage(conn, websocket.TextMessage, msgBytes, retryCount)
+			if err != nil {
+				handler.logger.Error("error while sending message", zap.Error(err))
 			}
 		} else {
-			handler.chatRepository.SetMessage(ctx.Background, userId, message.Id, string(msg))
+			//offline persistence
+			handler.chatRepository.SetMessage(ctx.Background, userId, message.Id, string(msgBytes))
 		}
+	}
+}
 
+func readMessage(conn *websocket.Conn) (int, []byte, error) {
+	mt, msg, err := conn.ReadMessage()
+	if err != nil {
+		if websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
+			return 0, nil, err
+		} else if websocket.IsUnexpectedCloseError(err) {
+			return 0, nil, err
+		} else {
+			return 0, nil, err
+		}
+	}
+
+	return mt, msg, err
+}
+
+func sendMessage(conn *websocket.Conn, mt int, msg []byte, retryCount int) error {
+	err := conn.WriteMessage(mt, msg)
+	if err != nil {
+		err = sendWithRetry(websocket.TextMessage, msg, conn, retryCount)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
-func fetchOfflineMesages(userId string, chatRepository *chat.ChatRepository, env *config.Env, conn *websocket.Conn) ([]byte, error) {
+func fetchOfflineMesages(userId string, chatRepository *chat.ChatRepository, env *config.Env, conn *websocket.Conn) error {
 	offlineMsg, err := chatRepository.GetMessage(ctx.Background, userId)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	offlineMsgBytes, err := json.Marshal(offlineMsg)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	if len(offlineMsg) != 0 {
@@ -187,19 +189,19 @@ func fetchOfflineMesages(userId string, chatRepository *chat.ChatRepository, env
 			var retryCount int = 5
 			retryCount, err := strconv.Atoi(env.RetryCount)
 			if err != nil {
-				return nil, err
+				return err
 			}
 
 			err = sendWithRetry(websocket.TextMessage, offlineMsgBytes, conn, retryCount)
 			if err != nil {
-				return nil, err
+				return err
 			}
 		} else {
 			// go chatRepository.DeleteMessage(ctx.Background, userId, )
 		}
 	}
 
-	return offlineMsgBytes, nil
+	return nil
 }
 
 func sendWithRetry(mt int, msg []byte, conn *websocket.Conn, retryCount int) error {
@@ -209,24 +211,6 @@ func sendWithRetry(mt int, msg []byte, conn *websocket.Conn, retryCount int) err
 		if err != nil {
 			return err
 		}
-	}
-
-	return nil
-}
-
-func ackMessage(mt int, msg []byte, conn *websocket.Conn) error {
-	var message *dto.Message
-	err := json.Unmarshal(msg, message)
-	if err != nil {
-		return err
-	}
-	message.Type = _const.ACK
-
-	ackMessage, err := json.Marshal(message)
-
-	err = conn.WriteMessage(mt, ackMessage)
-	if err != nil {
-		return err
 	}
 
 	return nil

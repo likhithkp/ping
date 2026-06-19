@@ -5,9 +5,9 @@ import (
 	"go.uber.org/fx"
 )
 
-var Module = fx.Module("data_access-redis",
+var Module = fx.Module("dataaccess-redis",
 	fx.Provide(
 		NewRedisClient,
-		chat.NewUrlRedisService,
+		chat.NewChatRedisService,
 	),
 )
