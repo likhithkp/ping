@@ -8,9 +8,14 @@
 5. Send-receive messages (done)
 6. Send/receive media
 7. Access messages after they've been offline (done)
-8. Ack offline and online (done) message.
+8. Ack offline(done) and online (done) message.
 
-9. Audio/Video calling.
+9. Heartbeat / Ping-Pong Keep WebSocket alive, detect disconnects
+10. Last Active / Online Status Show when user was last online
+11. Typing Indicator Real-time feedback
+12. Media Sharing (S3 Presigned URLs) Images, videos, files
+
+13. Audio/Video calling.
 
 # Non-Functional
 

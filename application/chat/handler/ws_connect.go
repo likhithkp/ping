@@ -68,6 +68,7 @@ func (handler *WsConnectHandler) Ws(c *websocket.Conn) error {
 
 	connectionmap.Add(userId, c)
 	defer connectionmap.Remove(userId)
+	defer c.Close()
 
 	err = fetchOfflineMesages(userId, handler.chatRepository, handler.env, c)
 	if err != nil {
@@ -97,20 +98,20 @@ func (handler *WsConnectHandler) Ws(c *websocket.Conn) error {
 			return websocket.ErrBadHandshake
 		}
 
-		var receiver string
+		var sender string
 		for _, user := range channelDomain.Users {
 			if user.UserId != userId {
-				receiver = user.UserId
+				sender = user.UserId
 				break
 			}
 		}
 
-		conn, online = connectionmap.Connections[receiver]
+		conn, online = connectionmap.Connections[sender]
 
 		if message.Type == _const.ACK {
-			err := handler.chatRepository.DeleteMessage(ctx.Background, message.SenderId, message.Id)
+			err = ackMessage(message, handler.chatRepository)
 			if err != nil {
-				handler.logger.Error("error while deleting acknowledged message in redis", zap.Error(err))
+				handler.logger.Error("error while acknowledging the message", zap.Error(err))
 			}
 		}
 
@@ -186,7 +187,6 @@ func fetchOfflineMesages(userId string, chatRepository *chat.ChatRepository, env
 	if len(offlineMsg) != 0 {
 		err := conn.WriteMessage(websocket.TextMessage, offlineMsgBytes)
 		if err != nil {
-			var retryCount int = 5
 			retryCount, err := strconv.Atoi(env.RetryCount)
 			if err != nil {
 				return err
@@ -196,9 +196,12 @@ func fetchOfflineMesages(userId string, chatRepository *chat.ChatRepository, env
 			if err != nil {
 				return err
 			}
-		} else {
-			// go chatRepository.DeleteMessage(ctx.Background, userId, )
 		}
+
+		// var message dto.Message
+		// for _, msg := range offlineMsg {
+		// 	go ackMessage(msg, chatRepository)
+		// }
 	}
 
 	return nil
@@ -208,6 +211,28 @@ func sendWithRetry(mt int, msg []byte, conn *websocket.Conn, retryCount int) err
 	for i := 0; i < retryCount; i++ {
 		err := conn.WriteMessage(mt, msg)
 		retryCount--
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func ackMessage(message dto.Message, chatRepository *chat.ChatRepository) error {
+	_, online := connectionmap.Connections[message.SenderId]
+	if online {
+		err := chatRepository.DeleteMessage(ctx.Background, message.SenderId, message.Id)
+		if err != nil {
+			return err
+		}
+	} else {
+		msgBytes, err := json.Marshal(message)
+		if err != nil {
+			return err
+		}
+
+		err = chatRepository.SetMessage(ctx.Background, message.SenderId, message.Id, string(msgBytes))
 		if err != nil {
 			return err
 		}
