@@ -12,6 +12,7 @@ type User struct {
 	Bio       string             `bson:"bio"`
 	Image     string             `bson:"image"`
 	IsBlocked bool               `bson:"isBlocked"`
+	LastSeen  time.Time          `bson:"lastSeen"`
 }
 
 type ChannelEntity struct {

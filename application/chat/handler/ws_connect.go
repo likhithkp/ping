@@ -67,8 +67,12 @@ func (handler *WsConnectHandler) Ws(c *websocket.Conn) error {
 	)
 
 	connectionmap.Add(userId, c)
-	defer connectionmap.Remove(userId)
-	defer c.Close()
+
+	defer func() {
+		handler.channelRepository.UpdateLastSeenForAllChannels(context.Background(), userId)
+		connectionmap.Remove(userId)
+		c.Close()
+	}()
 
 	err = fetchOfflineMesages(userId, handler.chatRepository, handler.env, c)
 	if err != nil {

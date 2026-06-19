@@ -30,6 +30,7 @@ func ConvertDomainToEntity(domain domain.ChannelDomain) (*channelEntity.ChannelE
 			Bio:       u.Bio,
 			Image:     u.Image,
 			IsBlocked: u.IsBlocked,
+			LastSeen:  u.LastSeen,
 		}
 		users = append(users, user)
 	}

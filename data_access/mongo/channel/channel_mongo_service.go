@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"errors"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -98,6 +99,30 @@ func (service *ChannelMongoService) DeleteChannel(ctx context.Context, id string
 
 	filter := bson.M{"_id": oid}
 	_, err = service.collection.DeleteOne(ctx, filter)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (service *ChannelMongoService) UpdateLastSeenForAllChannels(ctx context.Context, userId string) error {
+	uid, err := primitive.ObjectIDFromHex(userId)
+	if err != nil {
+		return err
+	}
+
+	filter := bson.M{
+		"users.userId": uid,
+	}
+
+	update := bson.M{
+		"$set": bson.M{
+			"users.$.lastSeen": time.Now().UTC(),
+		},
+	}
+
+	_, err = service.collection.UpdateMany(ctx, filter, update)
 	if err != nil {
 		return err
 	}

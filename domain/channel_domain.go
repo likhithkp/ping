@@ -10,6 +10,7 @@ type User struct {
 	Bio       string
 	Image     string
 	IsBlocked bool
+	LastSeen  time.Time
 }
 
 type ChannelDomain struct {

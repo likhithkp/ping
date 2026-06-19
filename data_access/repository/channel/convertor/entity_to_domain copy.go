@@ -16,6 +16,7 @@ func ConvertEntityToDomain(entity *channelEntity.ChannelEntity) (*domain.Channel
 			Bio:       u.Bio,
 			Image:     u.Image,
 			IsBlocked: u.IsBlocked,
+			LastSeen:  u.LastSeen,
 		}
 		users = append(users, user)
 	}

@@ -12,7 +12,7 @@
 
 9. Heartbeat / Ping-Pong Keep WebSocket alive, detect disconnects
 10. Last Active / Online Status Show when user was last online
-11. Typing Indicator Real-time feedback
+11. Typing Indicator Real-time feedback (handled by FE)
 12. Media Sharing (S3 Presigned URLs) Images, videos, files
 
 13. Audio/Video calling.

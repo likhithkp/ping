@@ -15,6 +15,7 @@ type UserDomain struct {
 	Password    string
 	Email       string
 	PhoneNumber string
+	LastSeen    time.Time
 	CreateAt    time.Time
 	UpdatedAt   time.Time
 }

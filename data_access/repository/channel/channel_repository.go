@@ -84,3 +84,12 @@ func (repository *ChannelRepository) DeleteChannel(ctx context.Context, id strin
 	}
 	return nil
 }
+
+func (repository *ChannelRepository) UpdateLastSeenForAllChannels(ctx context.Context, userID string) error {
+	err := repository.channelMongoService.UpdateLastSeenForAllChannels(ctx, userID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
