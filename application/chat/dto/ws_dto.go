@@ -3,11 +3,10 @@ package dto
 import _const "github.com/likhithkp/ping/utils/const"
 
 type Message struct {
-	Id           string `json:"id"`
-	ChannelId    string `json:"channelId"`
-	SenderId     string `json:"senderId"`
-	AckMessageId string `json:"ackMessageId"`
-	Message      string `json:"message"`
-	// Status       _const.MessageStatusType `json:"status"`
-	Type _const.MessageType `json:"type"`
+	Id           string             `json:"id,omitempty"`
+	ChannelId    string             `json:"channelId,omitempty"`
+	SenderId     string             `json:"senderId,omitempty"`
+	AckMessageId string             `json:"ackMessageId,omitempty"`
+	Message      string             `json:"message,omitempty"`
+	Type         _const.MessageType `json:"type,omitempty"`
 }

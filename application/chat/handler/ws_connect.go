@@ -59,7 +59,7 @@ func (handler *WsConnectHandler) Ws(c *websocket.Conn) error {
 
 	var (
 		err           error
-		conn          *websocket.Conn
+		conn          *connectionmap.User
 		online        bool
 		message       dto.Message
 		channelDomain *domain.ChannelDomain
@@ -112,10 +112,16 @@ func (handler *WsConnectHandler) Ws(c *websocket.Conn) error {
 
 		conn, online = connectionmap.Connections[sender]
 
-		if message.Type == _const.ACK {
+		switch message.Type {
+		case _const.ACK:
 			err = ackMessage(message, handler.chatRepository)
 			if err != nil {
 				handler.logger.Error("error while acknowledging the message", zap.Error(err))
+			}
+		case _const.PING:
+			err = sendPong(c)
+			if err != nil {
+				handler.logger.Error("error while acknowledging the ping", zap.Error(err))
 			}
 		}
 
@@ -139,7 +145,7 @@ func (handler *WsConnectHandler) Ws(c *websocket.Conn) error {
 				handler.logger.Error("failed to convert retry count to int", zap.Error(err))
 			}
 
-			err = sendMessage(conn, websocket.TextMessage, msgBytes, retryCount)
+			err = sendMessage(conn.Ws, websocket.TextMessage, msgBytes, retryCount)
 			if err != nil {
 				handler.logger.Error("error while sending message", zap.Error(err))
 			}
@@ -240,6 +246,21 @@ func ackMessage(message dto.Message, chatRepository *chat.ChatRepository) error 
 		if err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+func sendPong(conn *websocket.Conn) error {
+	msg := dto.Message{Type: _const.PONG}
+	msgBytes, err := json.Marshal(msg)
+	if err != nil {
+		return err
+	}
+
+	err = conn.WriteMessage(websocket.TextMessage, msgBytes)
+	if err != nil {
+		return err
 	}
 
 	return nil

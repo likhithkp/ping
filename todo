@@ -11,7 +11,7 @@
 8. Ack offline(done) and online (done) message.
 
 9. Heartbeat / Ping-Pong Keep WebSocket alive, detect disconnects
-10. Last Active / Online Status Show when user was last online
+10. Last Active / Online Status Show when user was last online (done)
 11. Typing Indicator Real-time feedback (handled by FE)
 12. Media Sharing (S3 Presigned URLs) Images, videos, files
 
