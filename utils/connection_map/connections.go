@@ -1,6 +1,7 @@
 package connectionmap
 
 import (
+	"log"
 	"time"
 
 	"github.com/gofiber/contrib/websocket"
@@ -25,4 +26,32 @@ func Add(userId string, c *websocket.Conn) {
 
 func Remove(userId string) {
 	delete(Connections, userId)
+}
+
+func RemoveStaleConnections() {
+	ticker := time.NewTicker(30 * time.Second)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		log.Println("Checking stale connections...")
+		log.Println("connections map", Connections)
+
+		if len(Connections) == 0 {
+			continue
+		}
+
+		for userId, user := range Connections {
+			elapsed := time.Since(user.LastHeartBeat)
+
+			if elapsed >= 45*time.Second {
+				log.Printf("User %s last heartbeat activeness has crossed 45s, removing user from connection map\n", userId)
+				Remove(userId)
+				user.Ws.Close()
+			}
+		}
+	}
+}
+
+func UpdateHeartbeat(userId string) {
+	Connections[userId].LastHeartBeat = time.Now().UTC()
 }

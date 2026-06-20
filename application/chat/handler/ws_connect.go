@@ -119,6 +119,7 @@ func (handler *WsConnectHandler) Ws(c *websocket.Conn) error {
 				handler.logger.Error("error while acknowledging the message", zap.Error(err))
 			}
 		case _const.PING:
+			connectionmap.UpdateHeartbeat(userId)
 			err = sendPong(c)
 			if err != nil {
 				handler.logger.Error("error while acknowledging the ping", zap.Error(err))
