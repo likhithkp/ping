@@ -92,26 +92,6 @@ func (handler *WsConnectHandler) Ws(c *websocket.Conn) error {
 			return websocket.ErrBadHandshake
 		}
 
-		channelDomain, err = handler.channelRepository.GetChannelById(context.Background(), message.ChannelId)
-		if err != nil {
-			handler.logger.Error("error while validating channel", zap.Error(err))
-			return err
-		}
-		if channelDomain == nil {
-			handler.logger.Error("channel not found", zap.Error(err))
-			return websocket.ErrBadHandshake
-		}
-
-		var sender string
-		for _, user := range channelDomain.Users {
-			if user.UserId != userId {
-				sender = user.UserId
-				break
-			}
-		}
-
-		conn, online = connectionmap.Connections[sender]
-
 		switch message.Type {
 		case _const.ACK:
 			err = ackMessage(message, handler.chatRepository)
@@ -124,10 +104,30 @@ func (handler *WsConnectHandler) Ws(c *websocket.Conn) error {
 			if err != nil {
 				handler.logger.Error("error while acknowledging the ping", zap.Error(err))
 			}
+		case _const.MESSAGE:
+			channelDomain, err = handler.channelRepository.GetChannelById(context.Background(), message.ChannelId)
+			if err != nil {
+				handler.logger.Error("error while validating channel", zap.Error(err))
+				return err
+			}
+			if channelDomain == nil {
+				handler.logger.Error("channel not found", zap.Error(err))
+				return websocket.ErrBadHandshake
+			}
+
+			var sender string
+			for _, user := range channelDomain.Users {
+				if user.UserId != userId {
+					sender = user.UserId
+					break
+				}
+			}
+			conn, online = connectionmap.Connections[sender]
 		}
 
 		//Send
 		message.Id = primitive.NewObjectID().Hex()
+		message.SenderId = userId
 		if online {
 			msgBytes, err = json.Marshal(message)
 			if err != nil {
@@ -208,11 +208,6 @@ func fetchOfflineMesages(userId string, chatRepository *chat.ChatRepository, env
 				return err
 			}
 		}
-
-		// var message dto.Message
-		// for _, msg := range offlineMsg {
-		// 	go ackMessage(msg, chatRepository)
-		// }
 	}
 
 	return nil

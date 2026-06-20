@@ -1,6 +1,7 @@
 package connectionmap
 
 import (
+	"fmt"
 	"log"
 	"time"
 
@@ -34,7 +35,6 @@ func RemoveStaleConnections() {
 
 	for range ticker.C {
 		log.Println("Checking stale connections...")
-		log.Println("connections map", Connections)
 
 		if len(Connections) == 0 {
 			continue
@@ -44,11 +44,13 @@ func RemoveStaleConnections() {
 			elapsed := time.Since(user.LastHeartBeat)
 
 			if elapsed >= 45*time.Second {
-				log.Printf("User %s last heartbeat activeness has crossed 45s, removing user from connection map\n", userId)
+				log.Printf("Removing stale user %s from ws connection map\n", userId)
 				Remove(userId)
 				user.Ws.Close()
 			}
 		}
+
+		fmt.Printf("conn map %v", Connections)
 	}
 }
 

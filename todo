@@ -6,24 +6,17 @@
 
 4. Start group chats (limit 100 users) (done)
 5. Send-receive messages (done)
-6. Send/receive media
-7. Access messages after they've been offline (done)
-8. Ack offline(done) and online (done) message.
+6. Access messages after they've been offline (done)
+7. Ack offline(done) and online (done) message.
 
-9. Heartbeat / Ping-Pong Keep WebSocket alive, detect disconnects
-10. Last Active / Online Status Show when user was last online (done)
-11. Typing Indicator Real-time feedback (handled by FE)
+8. Heartbeat / Ping-Pong Keep WebSocket alive, detect disconnects (done)
+9. Last Active / Online Status Show when user was last online (done)
+10. Typing Indicator Real-time feedback (handled by FE)
+
+11. Send/receive media
 12. Media Sharing (S3 Presigned URLs) Images, videos, files
 
 13. Audio/Video calling.
-
-# Non-Functional
-
-1. Delivered with low-latency, < 500ms
-2. Guarantee delivery of messages
-3. Billions of users, high throughput
-4. Messages not stored unnecessarily
-5. Fault-tolerant
 
 # Core entity
 

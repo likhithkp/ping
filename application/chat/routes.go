@@ -6,5 +6,4 @@ import (
 
 func RegisterChatRoutes(app *fiber.App, controller *Controller) {
 	app.Get("/ws/:id", controller.WebSocketUpgrade())
-	app.Get("/ws/ack/:id", controller.WebSocketUpgrade())
 }
