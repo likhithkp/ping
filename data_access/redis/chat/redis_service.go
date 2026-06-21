@@ -2,6 +2,7 @@ package chat
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -41,6 +42,9 @@ func (s *ChatRedisService) GetMessage(ctx context.Context, userId string) (map[s
 }
 
 func (s *ChatRedisService) DeleteMessage(ctx context.Context, userId, messageId string) error {
+	fmt.Println("Rached redis delete the acked message")
+	fmt.Println("userID", userId)
+	fmt.Println("messageId", messageId)
 	_, err := s.client.HDel(ctx, "message:"+userId, messageId).Result()
 	if err == redis.Nil {
 		return nil

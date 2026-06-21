@@ -8,7 +8,6 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/likhithkp/ping/utils/config"
-	connectionmap "github.com/likhithkp/ping/utils/connection_map"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -38,7 +37,7 @@ func RunHttpServer(lc fx.Lifecycle, env *config.Env, app *fiber.App, logger *zap
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			go connectionmap.RemoveStaleConnections()
+			// go connectionmap.RemoveStaleConnections()
 
 			go func() {
 				logger.Info("[server.go] Starting server", zap.String("port", env.Port))
