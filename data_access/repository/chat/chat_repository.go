@@ -53,3 +53,12 @@ func (repository *ChatRepository) DeleteMessage(ctx context.Context, userId, mes
 
 	return nil
 }
+
+func (repository *ChatRepository) DeleteAllMessages(ctx context.Context, userId string) error {
+	err := repository.chatRedisService.DeleteAllMessage(ctx, userId)
+	if err != nil {
+		return nil
+	}
+
+	return nil
+}

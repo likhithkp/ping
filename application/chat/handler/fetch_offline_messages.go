@@ -50,5 +50,10 @@ func (handler *FetchOfflineMesagesHandler) FetchOfflineMesages(userId string, en
 		}
 	}
 
+	err = handler.chatRepository.DeleteAllMessages(ctx.Background, userId)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

@@ -62,3 +62,11 @@ func (s *ChatRedisService) DeleteMessage(ctx context.Context, userId, messageId 
 	}
 	return err
 }
+
+func (s *ChatRedisService) DeleteAllMessage(ctx context.Context, userId string) error {
+	err := s.client.Del(ctx, "message:"+userId).Err()
+	if err == redis.Nil {
+		return nil
+	}
+	return err
+}

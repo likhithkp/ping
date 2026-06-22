@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"strconv"
 
 	"github.com/gofiber/contrib/websocket"
@@ -103,8 +102,6 @@ func (handler *WsConnectHandler) Ws(c *websocket.Conn) error {
 			return err
 		}
 
-		fmt.Printf("msg: %s", msg)
-
 		err = json.Unmarshal(msg, &message)
 		if err != nil {
 			return websocket.ErrBadHandshake
@@ -152,7 +149,7 @@ func (handler *WsConnectHandler) Ws(c *websocket.Conn) error {
 				return websocket.ErrBadHandshake
 			}
 
-			if message.Type != _const.ACK {
+			if message.Type == _const.MESSAGE {
 				err = handler.chatRepository.SetMessage(ctx.Background, sender, message.Id, string(msgBytes))
 				if err != nil {
 					handler.logger.Error("error while storing message in redis", zap.Error(err))
@@ -174,7 +171,13 @@ func (handler *WsConnectHandler) Ws(c *websocket.Conn) error {
 			if err != nil {
 				return websocket.ErrBadHandshake
 			}
-			handler.chatRepository.SetMessage(ctx.Background, sender, message.Id, string(msgBytes))
+
+			if message.Type == _const.MESSAGE {
+				err = handler.chatRepository.SetMessage(ctx.Background, sender, message.Id, string(msgBytes))
+				if err != nil {
+					handler.logger.Error("error while storing offline message in redis", zap.Error(err))
+				}
+			}
 		}
 	}
 }

@@ -1,7 +1,6 @@
 package connectionmap
 
 import (
-	"fmt"
 	"log"
 	"time"
 
@@ -44,13 +43,12 @@ func RemoveStaleConnections() {
 			elapsed := time.Since(user.LastHeartBeat)
 
 			if elapsed >= 45*time.Second {
-				log.Printf("Removing stale user %s from ws connection map\n", userId)
+				log.Printf("Removed offline user %s from ws connection map\n", userId)
 				Remove(userId)
 				user.Ws.Close()
 			}
 		}
 
-		fmt.Printf("conn map %v", Connections)
 	}
 }
 

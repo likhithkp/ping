@@ -7,16 +7,17 @@
 4. Start group chats (limit 100 users) (done)
 5. Send-receive messages (done)
 6. Access messages after they've been offline (done)
-7. Ack offline(done) and online (done) message.
+7. Ack message (done).
+8. Deleted offline messages after delivery (done)
+9. Heartbeat / Ping-Pong Keep WebSocket alive, detect disconnects (done)
+10. Last Active / Online Status Show when user was last online (done)
 
-8. Heartbeat / Ping-Pong Keep WebSocket alive, detect disconnects (done)
-9. Last Active / Online Status Show when user was last online (done)
-10. Typing Indicator Real-time feedback (handled by FE)
+11. Typing Indicator Real-time feedback (handled by FE)
 
-11. Send/receive media
-12. Media Sharing (S3 Presigned URLs) Images, videos, files
+12. Send/receive media
+13. Media Sharing (S3 Presigned URLs) Images, videos, files
 
-13. Audio/Video calling.
+14. Audio/Video calling.
 
 # Core entity
 
