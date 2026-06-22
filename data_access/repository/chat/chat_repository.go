@@ -36,7 +36,7 @@ func (repository *ChatRepository) UpdateMessage(ctx context.Context, userId, mes
 	return nil
 }
 
-func (repository *ChatRepository) GetMessage(ctx context.Context, userId string) (map[string]string, error) {
+func (repository *ChatRepository) GetMessage(ctx context.Context, userId string) ([]*chat.MessageEntity, error) {
 	msg, err := repository.chatRedisService.GetMessage(ctx, userId)
 	if err != nil {
 		return nil, err

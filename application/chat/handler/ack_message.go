@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/likhithkp/ping/application/chat/dto"
 	"github.com/likhithkp/ping/data_access/repository/chat"
@@ -22,11 +21,10 @@ func NewAckMessageHandler(
 	}
 }
 
-func (handler *AckMessageHandler) AckMessage(message dto.Message) error {
-	fmt.Println("ACked")
+func (handler *AckMessageHandler) AckMessage(userId string, message dto.Message) error {
 	_, online := connectionmap.Connections[message.SenderId]
 	if online {
-		err := handler.chatRepository.DeleteMessage(ctx.Background, message.SenderId, message.Id)
+		err := handler.chatRepository.DeleteMessage(ctx.Background, userId, message.Id)
 		if err != nil {
 			return err
 		}

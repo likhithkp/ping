@@ -2,7 +2,7 @@ package chat
 
 import (
 	"context"
-	"fmt"
+	"encoding/json"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -33,18 +33,29 @@ func (s *ChatRedisService) UpdateMessage(ctx context.Context, userId, messageId 
 	return nil
 }
 
-func (s *ChatRedisService) GetMessage(ctx context.Context, userId string) (map[string]string, error) {
+func (s *ChatRedisService) GetMessage(ctx context.Context, userId string) ([]*MessageEntity, error) {
 	msg, err := s.client.HGetAll(ctx, "message:"+userId).Result()
 	if err == redis.Nil {
 		return nil, nil
 	}
-	return msg, err
+
+	if len(msg) == 0 {
+		return nil, nil
+	}
+
+	var messages []*MessageEntity
+	for _, msgJSON := range msg {
+		var message MessageEntity
+		if err := json.Unmarshal([]byte(msgJSON), &message); err != nil {
+			continue
+		}
+		messages = append(messages, &message)
+	}
+
+	return messages, nil
 }
 
 func (s *ChatRedisService) DeleteMessage(ctx context.Context, userId, messageId string) error {
-	fmt.Println("Rached redis delete the acked message")
-	fmt.Println("userID", userId)
-	fmt.Println("messageId", messageId)
 	_, err := s.client.HDel(ctx, "message:"+userId, messageId).Result()
 	if err == redis.Nil {
 		return nil

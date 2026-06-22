@@ -10,7 +10,6 @@ import (
 	"github.com/likhithkp/ping/application/chat/dto"
 	"github.com/likhithkp/ping/data_access/repository/channel"
 	"github.com/likhithkp/ping/data_access/repository/chat"
-	"github.com/likhithkp/ping/data_access/repository/user"
 	"github.com/likhithkp/ping/domain"
 	"github.com/likhithkp/ping/utils/config"
 	connectionmap "github.com/likhithkp/ping/utils/connection_map"
@@ -27,7 +26,6 @@ type WsConnectHandler struct {
 	env                        *config.Env
 	logger                     *zap.Logger
 	storage                    *storage.Uploader
-	userRepository             *user.UserRepository
 	channelRepository          *channel.ChannelRepository
 	chatRepository             *chat.ChatRepository
 	readMessageHandler         *ReadMessageHandler
@@ -43,7 +41,6 @@ func NewWsConnectHandler(
 	env *config.Env,
 	logger *zap.Logger,
 	storage *storage.Uploader,
-	userRepository *user.UserRepository,
 	channelRepository *channel.ChannelRepository,
 	chatRepository *chat.ChatRepository,
 	readMessageHandler *ReadMessageHandler,
@@ -58,7 +55,6 @@ func NewWsConnectHandler(
 		env:                        env,
 		logger:                     logger,
 		storage:                    storage,
-		userRepository:             userRepository,
 		channelRepository:          channelRepository,
 		chatRepository:             chatRepository,
 		readMessageHandler:         readMessageHandler,
@@ -83,6 +79,7 @@ func (handler *WsConnectHandler) Ws(c *websocket.Conn) error {
 		message       dto.Message
 		channelDomain *domain.ChannelDomain
 		msgBytes      []byte
+		sender        string
 	)
 
 	connectionmap.Add(userId, c)
@@ -115,7 +112,7 @@ func (handler *WsConnectHandler) Ws(c *websocket.Conn) error {
 
 		switch message.Type {
 		case _const.ACK:
-			err = handler.ackMessageHandler.AckMessage(message)
+			err = handler.ackMessageHandler.AckMessage(userId, message)
 			if err != nil {
 				handler.logger.Error("error while acknowledging the message", zap.Error(err))
 			}
@@ -136,7 +133,6 @@ func (handler *WsConnectHandler) Ws(c *websocket.Conn) error {
 				return websocket.ErrBadHandshake
 			}
 
-			var sender string
 			for _, user := range channelDomain.Users {
 				if user.UserId != userId {
 					sender = user.UserId
@@ -157,7 +153,7 @@ func (handler *WsConnectHandler) Ws(c *websocket.Conn) error {
 			}
 
 			if message.Type != _const.ACK {
-				err = handler.chatRepository.SetMessage(ctx.Background, userId, message.Id, string(msgBytes))
+				err = handler.chatRepository.SetMessage(ctx.Background, sender, message.Id, string(msgBytes))
 				if err != nil {
 					handler.logger.Error("error while storing message in redis", zap.Error(err))
 				}
@@ -174,7 +170,11 @@ func (handler *WsConnectHandler) Ws(c *websocket.Conn) error {
 			}
 		} else {
 			//offline persistence
-			handler.chatRepository.SetMessage(ctx.Background, userId, message.Id, string(msgBytes))
+			msgBytes, err = json.Marshal(message)
+			if err != nil {
+				return websocket.ErrBadHandshake
+			}
+			handler.chatRepository.SetMessage(ctx.Background, sender, message.Id, string(msgBytes))
 		}
 	}
 }
