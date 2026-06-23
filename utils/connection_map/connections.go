@@ -49,7 +49,7 @@ func RemoveStaleConnections() {
 		for userId, user := range Connections {
 			elapsed := time.Since(user.LastHeartBeat)
 
-			if elapsed >= 45*time.Second {
+			if elapsed >= 60*time.Second {
 				log.Printf("Removed offline user %s from ws connection map\n", userId)
 				Remove(userId)
 				user.Ws.Close()
