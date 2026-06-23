@@ -2,10 +2,13 @@ package connectionmap
 
 import (
 	"log"
+	"sync"
 	"time"
 
 	"github.com/gofiber/contrib/websocket"
 )
+
+var mu *sync.RWMutex
 
 type User struct {
 	Ws            *websocket.Conn
@@ -18,14 +21,18 @@ Use redis to maintain active connection map once the app is scaled horizontally
 var Connections = make(map[string]*User)
 
 func Add(userId string, c *websocket.Conn) {
+	mu.Lock()
 	Connections[userId] = &User{
 		Ws:            c,
 		LastHeartBeat: time.Now().UTC(),
 	}
+	mu.Unlock()
 }
 
 func Remove(userId string) {
+	mu.Lock()
 	delete(Connections, userId)
+	mu.Unlock()
 }
 
 func RemoveStaleConnections() {
@@ -53,5 +60,7 @@ func RemoveStaleConnections() {
 }
 
 func UpdateHeartbeat(userId string) {
+	mu.Lock()
 	Connections[userId].LastHeartBeat = time.Now().UTC()
+	mu.Unlock()
 }
