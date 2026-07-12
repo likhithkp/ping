@@ -8,6 +8,10 @@ import (
 	"github.com/gofiber/contrib/websocket"
 )
 
+/*
+Use redis to maintain active connection map once the app is scaled horizontally
+*/
+
 var mu *sync.RWMutex
 
 type User struct {
@@ -15,9 +19,6 @@ type User struct {
 	LastHeartBeat time.Time
 }
 
-/*
-Use redis to maintain active connection map once the app is scaled horizontally
-*/
 var Connections = make(map[string]*User)
 
 func Add(userId string, c *websocket.Conn) {
@@ -32,6 +33,12 @@ func Add(userId string, c *websocket.Conn) {
 func Remove(userId string) {
 	mu.Lock()
 	delete(Connections, userId)
+	mu.Unlock()
+}
+
+func UpdateHeartbeat(userId string) {
+	mu.Lock()
+	Connections[userId].LastHeartBeat = time.Now().UTC()
 	mu.Unlock()
 }
 
@@ -57,10 +64,4 @@ func RemoveStaleConnections() {
 		}
 
 	}
-}
-
-func UpdateHeartbeat(userId string) {
-	mu.Lock()
-	Connections[userId].LastHeartBeat = time.Now().UTC()
-	mu.Unlock()
 }
